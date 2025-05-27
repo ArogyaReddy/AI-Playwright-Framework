@@ -221,14 +221,11 @@ app.post('/run-by-feature-files', (req, res) => {
     return res.status(400).json({message: 'No valid feature file paths provided.'});
   }
 
-  // Basic security check: ensure paths start with 'features/'
-  // This is a very basic check; for production, you'd want more robust path validation/sanitization.
   for (const file of featureFiles) {
     // if (!file.startsWith('features/')) {
     if (!file.toLowerCase().startsWith('features/')) {
       return res.status(400).json({message: `Invalid feature file path: ${file}. Paths must start with 'features/'.`});
     }
-    // You could also check if files exist here, but Cucumber will error out if they don't.
   }
 
   console.log(`[Dashboard] Received request to run feature file(s): ${featureFiles.join(', ')}`);
@@ -236,17 +233,7 @@ app.post('/run-by-feature-files', (req, res) => {
   // --- FIX: Define cucumberCommand and cucumberArgs for this route ---
   const cucumberCommand = './node_modules/.bin/cucumber-js';
   // --- REVISED ARGUMENT STRATEGY using specific profile ---
-  const cucumberArgs = [
-    '--config',
-    'cucumber.js', // Explicitly load our config file
-    '--profile',
-    'specific_features_run', // Use the new profile that has NO 'paths' glob
-    ...featureFiles // Add the specific feature file paths
-  ];
-
-  // TODO: this is old code, update to use cucumber.js config
-  // const cucumberCommand = './node_modules/.bin/cucumber-js';
-  // const cucumberArgs = ['--require-module', '@babel/register', '--require', 'features/step_definitions/**/*.js', '--require', 'features/support/**/*.js', '--format', 'summary', ...featureFiles];
+  const cucumberArgs = ['--config', 'cucumber.js', '--profile', 'specific_features_run', ...featureFiles];
 
   // Logging the command to be spawned
   console.log('[Dashboard] EXACT COMMAND TO BE SPAWNED (Profile-based for specific features):');
@@ -255,7 +242,7 @@ app.post('/run-by-feature-files', (req, res) => {
   console.log('Full command string (for manual testing):', `${cucumberCommand} ${cucumberArgs.join(' ')}`);
   console.log(`Working Directory for spawn: ${projectRoot}`);
 
-  console.log(`[Dashboard] Executing command: ${cucumberCommand} ${cucumberArgs.join(' ')} in ${projectRoot}`);
+  // console.log(`[Dashboard] Executing command: ${cucumberCommand} ${cucumberArgs.join(' ')} in ${projectRoot}`);
 
   currentTestProcess = spawn(cucumberCommand, cucumberArgs, {
     cwd: projectRoot,
